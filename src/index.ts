@@ -43,35 +43,34 @@ const v2Configuration = new pipedrive.v2.Configuration({
   apiKey: process.env.PIPEDRIVE_API_TOKEN,
 });
 
-
 // Helper function to remove custom_fields from response data
 function cleanResponseData(data: any): any {
   if (!data) return data;
-  
+
   // If it's an array, clean each item
   if (Array.isArray(data)) {
-    return data.map(item => cleanResponseData(item));
+    return data.map((item) => cleanResponseData(item));
   }
-  
+
   // If it's an object, remove custom_fields key and clean nested objects
-  if (typeof data === 'object') {
+  if (typeof data === "object") {
     const cleaned = { ...data };
-    
+
     // Remove custom_fields key
-    if ('custom_fields' in cleaned) {
+    if ("custom_fields" in cleaned) {
       delete cleaned.custom_fields;
     }
-    
+
     // Clean nested objects
-    Object.keys(cleaned).forEach(key => {
-      if (typeof cleaned[key] === 'object' && cleaned[key] !== null) {
+    Object.keys(cleaned).forEach((key) => {
+      if (typeof cleaned[key] === "object" && cleaned[key] !== null) {
         cleaned[key] = cleanResponseData(cleaned[key]);
       }
     });
-    
+
     return cleaned;
   }
-  
+
   return data;
 }
 
@@ -103,7 +102,9 @@ const leadSourcesApi = new pipedrive.v1.LeadSourcesApi(v1Configuration);
 const leadsV1Api = new pipedrive.v1.LeadsApi(v1Configuration);
 const noteFieldsApi = new pipedrive.v1.NoteFieldsApi(v1Configuration);
 const notesApi = new pipedrive.v1.NotesApi(v1Configuration);
-const organizationFieldsApi = new pipedrive.v1.OrganizationFieldsApi(v1Configuration);
+const organizationFieldsApi = new pipedrive.v1.OrganizationFieldsApi(
+  v1Configuration
+);
 const personFieldsApi = new pipedrive.v1.PersonFieldsApi(v1Configuration);
 const productFieldsApi = new pipedrive.v1.ProductFieldsApi(v1Configuration);
 const webhooksApi = new pipedrive.v1.WebhooksApi(v1Configuration);
@@ -177,7 +178,6 @@ server.tool(
         Object.entries(params).filter(([_, value]) => value !== undefined)
       );
 
-
       const response = await dealsApi.getDeals(queryParams);
       return {
         content: [
@@ -220,9 +220,9 @@ server.tool(
   async ({ dealId, include_fields, custom_fields }) => {
     try {
       const queryParams: any = { id: dealId };
-      
+
       if (include_fields) queryParams.include_fields = include_fields;
-      
+
       if (custom_fields) queryParams.custom_fields = custom_fields;
 
       const response = await dealsApi.getDeal(queryParams);
@@ -293,11 +293,8 @@ server.tool(
 
       // Filter out undefined values but ensure required fields are preserved
       const queryParams = Object.fromEntries(
-        Object.entries(searchParams).filter(
-          ([_, value]) => value !== undefined
-        )
+        Object.entries(searchParams).filter(([_, value]) => value !== undefined)
       ) as typeof searchParams;
-
 
       const response = await dealsApi.searchDeals(queryParams);
       return {
@@ -374,7 +371,6 @@ server.tool(
         Object.entries(params).filter(([_, value]) => value !== undefined)
       );
 
-
       const response = await personsApi.getPersons(queryParams);
       return {
         content: [
@@ -417,9 +413,9 @@ server.tool(
   async ({ personId, include_fields, custom_fields }) => {
     try {
       const queryParams: any = { id: personId };
-      
+
       if (include_fields) queryParams.include_fields = include_fields;
-      
+
       if (custom_fields) queryParams.custom_fields = custom_fields;
 
       const response = await personsApi.getPerson(queryParams);
@@ -483,11 +479,8 @@ server.tool(
 
       // Filter out undefined values but ensure required fields are preserved
       const queryParams = Object.fromEntries(
-        Object.entries(searchParams).filter(
-          ([_, value]) => value !== undefined
-        )
+        Object.entries(searchParams).filter(([_, value]) => value !== undefined)
       ) as typeof searchParams;
-
 
       const response = await personsApi.searchPersons(queryParams);
       return {
@@ -568,7 +561,6 @@ server.tool(
         Object.entries(params).filter(([_, value]) => value !== undefined)
       );
 
-
       const response = await organizationsApi.getOrganizations(queryParams);
       return {
         content: [
@@ -611,9 +603,9 @@ server.tool(
   async ({ organizationId, include_fields, custom_fields }) => {
     try {
       const queryParams: any = { id: organizationId };
-      
+
       if (include_fields) queryParams.include_fields = include_fields;
-      
+
       if (custom_fields) queryParams.custom_fields = custom_fields;
 
       const response = await organizationsApi.getOrganization(queryParams);
@@ -670,11 +662,8 @@ server.tool(
 
       // Filter out undefined values but ensure required fields are preserved
       const queryParams = Object.fromEntries(
-        Object.entries(searchParams).filter(
-          ([_, value]) => value !== undefined
-        )
+        Object.entries(searchParams).filter(([_, value]) => value !== undefined)
       ) as typeof searchParams;
-
 
       const response = await organizationsApi.searchOrganizations(queryParams);
       return {
@@ -790,55 +779,63 @@ server.tool(
 );
 
 // Get all stages
-server.tool("get-stages", "Retrieve all pipeline stages across all sales pipelines. Shows stage names, win probability, order, and stage-specific configuration settings.", {}, async () => {
-  try {
-    // Since the stages are related to pipelines, we'll get all pipelines first
-    const pipelinesResponse = await pipelinesApi.getPipelines();
-    const pipelines = pipelinesResponse.data || [];
+server.tool(
+  "get-stages",
+  "Retrieve all pipeline stages across all sales pipelines. Shows stage names, win probability, order, and stage-specific configuration settings.",
+  {},
+  async () => {
+    try {
+      // Since the stages are related to pipelines, we'll get all pipelines first
+      const pipelinesResponse = await pipelinesApi.getPipelines();
+      const pipelines = pipelinesResponse.data || [];
 
-    // For each pipeline, fetch its stages
-    const allStages = [];
-    for (const pipeline of pipelines) {
-      try {
-        // This is using the API to get stages by pipeline ID
-        const stagesResponse = await fetch(
-          `https://api.pipedrive.com/api/v2/stages?pipeline_id=${pipeline.id}&api_token=${process.env.PIPEDRIVE_API_TOKEN}`
-        );
-        const stagesData = await stagesResponse.json();
+      // For each pipeline, fetch its stages
+      const allStages = [];
+      for (const pipeline of pipelines) {
+        try {
+          // This is using the API to get stages by pipeline ID
+          const stagesResponse = await fetch(
+            `https://api.pipedrive.com/api/v2/stages?pipeline_id=${pipeline.id}&api_token=${process.env.PIPEDRIVE_API_TOKEN}`
+          );
+          const stagesData = await stagesResponse.json();
 
-        if (stagesData.success && stagesData.data) {
-          const pipelineStages = stagesData.data.map((stage: any) => ({
-            ...stage,
-            pipeline_name: pipeline.name,
-          }));
-          allStages.push(...pipelineStages);
+          if (stagesData.success && stagesData.data) {
+            const pipelineStages = stagesData.data.map((stage: any) => ({
+              ...stage,
+              pipeline_name: pipeline.name,
+            }));
+            allStages.push(...pipelineStages);
+          }
+        } catch (e) {
+          console.error(
+            `Error fetching stages for pipeline ${pipeline.id}:`,
+            e
+          );
         }
-      } catch (e) {
-        console.error(`Error fetching stages for pipeline ${pipeline.id}:`, e);
       }
-    }
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(allStages, null, 2),
-        },
-      ],
-    };
-  } catch (error) {
-    console.error("Error fetching stages:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error fetching stages: ${getErrorMessage(error)}`,
-        },
-      ],
-      isError: true,
-    };
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(allStages, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error fetching stages:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error fetching stages: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
   }
-});
+);
 
 // Search leads
 server.tool(
@@ -920,25 +917,36 @@ server.tool(
   }
 );
 
-// === ACTIVITIES API ===
+// === ACTIVITIES API (v2) ===
 
 // Get all activities
 server.tool(
   "get-activities",
-  "Retrieve all scheduled and completed activities (calls, meetings, emails, tasks) from Pipedrive. Filter by type, date, owner, or associated deals and contacts.",
+  "Retrieve all scheduled and completed activities (calls, meetings, emails, tasks) from Pipedrive. Filter by type, date, owner, deals, leads, or associated contacts with comprehensive search options.",
   {
     filter_id: z.number().optional().describe("Filter ID to match activities"),
-    user_id: z
+    ids: z
+      .string()
+      .optional()
+      .describe("Comma-separated list of activity IDs to retrieve"),
+    owner_id: z
       .number()
       .optional()
       .describe("User ID to filter activities by assignee"),
     deal_id: z.number().optional().describe("Deal ID to filter activities"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to filter activities"),
     person_id: z.number().optional().describe("Person ID to filter activities"),
     org_id: z
       .number()
       .optional()
       .describe("Organization ID to filter activities"),
-    type: z.string().optional().describe("Activity type"),
+    done: z
+      .boolean()
+      .optional()
+      .describe("Filter by completion status (true=completed, false=pending)"),
     updated_since: z
       .string()
       .optional()
@@ -951,15 +959,22 @@ server.tool(
       .describe(
         "RFC3339 datetime to filter activities updated before this time"
       ),
-    start_date: z
+    sort_by: z
       .string()
       .optional()
-      .describe("Start date filter (YYYY-MM-DD)"),
-    end_date: z.string().optional().describe("End date filter (YYYY-MM-DD)"),
-    done: z
-      .enum(["0", "1"])
+      .describe(
+        "Field to sort by (e.g., 'due_date', 'add_time', 'update_time')"
+      ),
+    sort_direction: z
+      .enum(["asc", "desc"])
       .optional()
-      .describe("Filter by done status (0=not done, 1=done)"),
+      .describe("Sort direction"),
+    include_fields: z
+      .string()
+      .optional()
+      .describe(
+        "Comma-separated list of additional fields to include in the response"
+      ),
     limit: z
       .number()
       .max(500)
@@ -997,62 +1012,26 @@ server.tool(
   }
 );
 
-// Create activity
-server.tool(
-  "create-activity",
-  "Schedule a new activity such as a call, meeting, email, or task in Pipedrive. Link activities to deals, contacts, or organizations for better CRM tracking.",
-  {
-    subject: z.string().describe("Activity subject"),
-    type: z.string().optional().describe("Activity type"),
-    deal_id: z.number().optional().describe("Deal ID to associate with"),
-    person_id: z.number().optional().describe("Person ID to associate with"),
-    org_id: z.number().optional().describe("Organization ID to associate with"),
-    user_id: z.number().optional().describe("User ID to assign activity to"),
-    due_date: z.string().optional().describe("Due date (YYYY-MM-DD)"),
-    due_time: z.string().optional().describe("Due time (HH:MM)"),
-    duration: z.string().optional().describe("Duration in format H:MM"),
-    note: z.string().optional().describe("Activity note"),
-    done: z
-      .enum(["0", "1"])
-      .optional()
-      .describe("Mark as done (0=not done, 1=done)"),
-  },
-  async (params) => {
-    try {
-      const response = await activitiesApi.addActivity(params);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(cleanResponseData(response.data), null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      console.error("Error creating activity:", error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error creating activity: ${getErrorMessage(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-);
-
 // Get activity by ID
 server.tool(
   "get-activity",
-  "Fetch detailed information about a single activity using its ID. Returns activity type, participants, notes, completion status, and linked CRM records.",
+  "Fetch detailed information about a single activity using its ID. Returns activity details including type, participants, notes, completion status, and all linked CRM records.",
   {
     activityId: z.number().describe("Activity ID"),
+    include_fields: z
+      .string()
+      .optional()
+      .describe(
+        "Comma-separated list of additional fields to include in the response"
+      ),
   },
-  async ({ activityId }) => {
+  async ({ activityId, include_fields }) => {
     try {
-      const response = await activitiesApi.getActivity({ id: activityId });
+      const queryParams: any = { id: activityId };
+
+      if (include_fields) queryParams.include_fields = include_fields;
+
+      const response = await activitiesApi.getActivity(queryParams);
       return {
         content: [
           {
@@ -1078,26 +1057,215 @@ server.tool(
   }
 );
 
+// Create activity
+server.tool(
+  "create-activity",
+  "Schedule a new activity such as a call, meeting, email, or task in Pipedrive. Link activities to deals, leads, contacts, or organizations for comprehensive CRM tracking.",
+  {
+    subject: z.string().describe("Activity subject (required)"),
+    type: z
+      .string()
+      .optional()
+      .describe("Activity type (e.g., 'call', 'meeting', 'email', 'task')"),
+    owner_id: z
+      .number()
+      .optional()
+      .describe("User ID to assign the activity to"),
+    deal_id: z
+      .number()
+      .optional()
+      .describe("Deal ID to associate the activity with"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to associate the activity with"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID to associate the activity with"),
+    org_id: z
+      .number()
+      .optional()
+      .describe("Organization ID to associate the activity with"),
+    project_id: z
+      .number()
+      .optional()
+      .describe("Project ID to associate the activity with"),
+    due_date: z.string().optional().describe("Due date in YYYY-MM-DD format"),
+    due_time: z.string().optional().describe("Due time in HH:MM format"),
+    duration: z.string().optional().describe("Duration in H:MM format"),
+    busy: z
+      .boolean()
+      .optional()
+      .describe("Whether the activity should be marked as busy time"),
+    done: z
+      .boolean()
+      .optional()
+      .describe("Whether the activity is completed (true) or pending (false)"),
+    location: z
+      .object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        address: z.string().optional(),
+        subpremise: z.string().optional(),
+        street_number: z.string().optional(),
+        route: z.string().optional(),
+        sublocality: z.string().optional(),
+        locality: z.string().optional(),
+        admin_area_level_1: z.string().optional(),
+        admin_area_level_2: z.string().optional(),
+        country: z.string().optional(),
+        postal_code: z.string().optional(),
+        formatted_address: z.string().optional(),
+      })
+      .optional()
+      .describe("Activity location details"),
+    participants: z
+      .array(
+        z.object({
+          person_id: z.number().optional(),
+          primary_flag: z.boolean().optional(),
+        })
+      )
+      .optional()
+      .describe("Array of participants"),
+    attendees: z
+      .array(
+        z.object({
+          email_address: z.string(),
+          name: z.string().optional(),
+          status: z.string().optional(),
+        })
+      )
+      .optional()
+      .describe("Array of email attendees"),
+    public_description: z
+      .string()
+      .optional()
+      .describe("Public description visible to attendees"),
+    priority: z
+      .number()
+      .optional()
+      .describe("Priority level (1=low, 2=normal, 3=high)"),
+    note: z.string().optional().describe("Additional notes for the activity"),
+  },
+  async (params) => {
+    try {
+      const response = await activitiesApi.addActivity({
+        AddActivityRequest: params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error creating activity:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error creating activity: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
 // Update activity
 server.tool(
   "update-activity",
-  "Modify details of an existing activity such as changing the date, participants, notes, or completion status. Update calls, meetings, emails, or tasks.",
+  "Modify details of an existing activity including changing dates, participants, notes, completion status, or associated CRM records. Update calls, meetings, emails, or tasks.",
   {
     activityId: z.number().describe("Activity ID"),
     subject: z.string().optional().describe("Activity subject"),
     type: z.string().optional().describe("Activity type"),
-    deal_id: z.number().optional().describe("Deal ID to associate with"),
-    person_id: z.number().optional().describe("Person ID to associate with"),
-    org_id: z.number().optional().describe("Organization ID to associate with"),
-    user_id: z.number().optional().describe("User ID to assign activity to"),
-    due_date: z.string().optional().describe("Due date (YYYY-MM-DD)"),
-    due_time: z.string().optional().describe("Due time (HH:MM)"),
-    duration: z.string().optional().describe("Duration in format H:MM"),
-    note: z.string().optional().describe("Activity note"),
-    done: z
-      .enum(["0", "1"])
+    owner_id: z
+      .number()
       .optional()
-      .describe("Mark as done (0=not done, 1=done)"),
+      .describe("User ID to assign the activity to"),
+    deal_id: z
+      .number()
+      .optional()
+      .describe("Deal ID to associate the activity with"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to associate the activity with"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID to associate the activity with"),
+    org_id: z
+      .number()
+      .optional()
+      .describe("Organization ID to associate the activity with"),
+    project_id: z
+      .number()
+      .optional()
+      .describe("Project ID to associate the activity with"),
+    due_date: z.string().optional().describe("Due date in YYYY-MM-DD format"),
+    due_time: z.string().optional().describe("Due time in HH:MM format"),
+    duration: z.string().optional().describe("Duration in H:MM format"),
+    busy: z
+      .boolean()
+      .optional()
+      .describe("Whether the activity should be marked as busy time"),
+    done: z
+      .boolean()
+      .optional()
+      .describe("Whether the activity is completed (true) or pending (false)"),
+    location: z
+      .object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        address: z.string().optional(),
+        subpremise: z.string().optional(),
+        street_number: z.string().optional(),
+        route: z.string().optional(),
+        sublocality: z.string().optional(),
+        locality: z.string().optional(),
+        admin_area_level_1: z.string().optional(),
+        admin_area_level_2: z.string().optional(),
+        country: z.string().optional(),
+        postal_code: z.string().optional(),
+        formatted_address: z.string().optional(),
+      })
+      .optional()
+      .describe("Activity location details"),
+    participants: z
+      .array(
+        z.object({
+          person_id: z.number().optional(),
+          primary_flag: z.boolean().optional(),
+        })
+      )
+      .optional()
+      .describe("Array of participants"),
+    attendees: z
+      .array(
+        z.object({
+          email_address: z.string(),
+          name: z.string().optional(),
+          status: z.string().optional(),
+        })
+      )
+      .optional()
+      .describe("Array of email attendees"),
+    public_description: z
+      .string()
+      .optional()
+      .describe("Public description visible to attendees"),
+    priority: z
+      .number()
+      .optional()
+      .describe("Priority level (1=low, 2=normal, 3=high)"),
+    note: z.string().optional().describe("Additional notes for the activity"),
   },
   async ({ activityId, ...params }) => {
     try {
@@ -1107,7 +1275,7 @@ server.tool(
 
       const response = await activitiesApi.updateActivity({
         id: activityId,
-        ...updateParams,
+        AddActivityRequest: updateParams,
       });
       return {
         content: [
@@ -1167,9 +1335,7 @@ server.tool(
       };
     }
   }
-);
-
-// === ACTIVITY FIELDS API ===
+); // === ACTIVITY FIELDS API ===
 
 // Get all activity fields
 server.tool(
@@ -1343,30 +1509,35 @@ server.tool(
 // === USERS API ===
 
 // Get all users
-server.tool("get-users", "Retrieve all Pipedrive users, owners, and team members. These are your company's internal users who can own deals, manage pipelines, and access the CRM system. Use this to find deal owners, sales reps, and team members.", {}, async () => {
-  try {
-    const response = await usersApi.getUsers();
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(cleanResponseData(response.data), null, 2),
-        },
-      ],
-    };
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error fetching users: ${getErrorMessage(error)}`,
-        },
-      ],
-      isError: true,
-    };
+server.tool(
+  "get-users",
+  "Retrieve all Pipedrive users, owners, and team members. These are your company's internal users who can own deals, manage pipelines, and access the CRM system. Use this to find deal owners, sales reps, and team members.",
+  {},
+  async () => {
+    try {
+      const response = await usersApi.getUsers();
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error fetching users: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
   }
-});
+);
 
 // Get current user
 server.tool(
@@ -1432,18 +1603,93 @@ server.tool(
   }
 );
 
-// === NOTES API ===
+// === NOTES API (v1) ===
 
 // Get all notes
 server.tool(
   "get-notes",
-  "Retrieve all notes and comments from Pipedrive CRM. Includes notes attached to deals, contacts, organizations, and standalone notes with filtering options.",
+  "Retrieve all notes and comments from Pipedrive CRM. Includes notes attached to deals, contacts, organizations, projects, and leads with comprehensive filtering and sorting options.",
   {
-    deal_id: z.number().optional().describe("Deal ID to filter notes"),
-    person_id: z.number().optional().describe("Person ID to filter notes"),
-    org_id: z.number().optional().describe("Organization ID to filter notes"),
-    start: z.number().optional().describe("Pagination start"),
-    limit: z.number().optional().describe("Items per page"),
+    user_id: z
+      .number()
+      .optional()
+      .describe("User ID to filter notes by creator"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to filter notes by associated lead"),
+    deal_id: z
+      .number()
+      .optional()
+      .describe("Deal ID to filter notes by associated deal"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID to filter notes by associated contact"),
+    org_id: z
+      .number()
+      .optional()
+      .describe("Organization ID to filter notes by associated organization"),
+    project_id: z
+      .number()
+      .optional()
+      .describe("Project ID to filter notes by associated project"),
+    start: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the position that represents the first result for the page"
+      ),
+    limit: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the limit of entries to be returned. If not provided, 100 items will be returned."
+      ),
+    sort: z
+      .string()
+      .optional()
+      .describe(
+        "The field names and sorting mode separated by a comma (field_name_1 ASC, field_name_2 DESC). Supported fields vary by endpoint."
+      ),
+    start_date: z
+      .string()
+      .optional()
+      .describe(
+        "Date in YYYY-MM-DD format to filter notes created from this date"
+      ),
+    end_date: z
+      .string()
+      .optional()
+      .describe(
+        "Date in YYYY-MM-DD format to filter notes created until this date"
+      ),
+    pinned_to_lead_flag: z
+      .boolean()
+      .optional()
+      .describe("If set, filters notes that are pinned to the associated lead"),
+    pinned_to_deal_flag: z
+      .boolean()
+      .optional()
+      .describe("If set, filters notes that are pinned to the associated deal"),
+    pinned_to_organization_flag: z
+      .boolean()
+      .optional()
+      .describe(
+        "If set, filters notes that are pinned to the associated organization"
+      ),
+    pinned_to_person_flag: z
+      .boolean()
+      .optional()
+      .describe(
+        "If set, filters notes that are pinned to the associated person"
+      ),
+    pinned_to_project_flag: z
+      .boolean()
+      .optional()
+      .describe(
+        "If set, filters notes that are pinned to the associated project"
+      ),
   },
   async (params) => {
     try {
@@ -1475,58 +1721,10 @@ server.tool(
   }
 );
 
-// Create note
-server.tool(
-  "create-note",
-  "Add a new note or comment in Pipedrive. Attach notes to deals, contacts, organizations, or create standalone notes for future reference and team collaboration.",
-  {
-    content: z.string().describe("Note content"),
-    deal_id: z.number().optional().describe("Deal ID to associate with"),
-    person_id: z.number().optional().describe("Person ID to associate with"),
-    org_id: z.number().optional().describe("Organization ID to associate with"),
-    pinned_to_deal_flag: z
-      .enum(["0", "1"])
-      .optional()
-      .describe("Pin to deal (0=no, 1=yes)"),
-    pinned_to_person_flag: z
-      .enum(["0", "1"])
-      .optional()
-      .describe("Pin to person (0=no, 1=yes)"),
-    pinned_to_organization_flag: z
-      .enum(["0", "1"])
-      .optional()
-      .describe("Pin to organization (0=no, 1=yes)"),
-  },
-  async (params) => {
-    try {
-      const response = await notesApi.addNote(params);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(cleanResponseData(response.data), null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      console.error("Error creating note:", error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error creating note: ${getErrorMessage(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-);
-
 // Get note by ID
 server.tool(
   "get-note",
-  "Fetch detailed information about a single note using its ID. Returns note content, attachments, creation date, author, and linked CRM records.",
+  "Fetch detailed information about a single note using its ID. Returns note content, creator, timestamps, associated records, and pinning status.",
   {
     noteId: z.number().describe("Note ID"),
   },
@@ -1556,7 +1754,418 @@ server.tool(
   }
 );
 
-// === PRODUCTS API ===
+// Get note comments
+server.tool(
+  "get-note-comments",
+  "Retrieve all comments associated with a specific note. Returns threaded discussion, comment timestamps, and user information for collaborative note management.",
+  {
+    noteId: z.number().describe("Note ID"),
+    start: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the position that represents the first result for the page"
+      ),
+    limit: z
+      .number()
+      .optional()
+      .describe("For pagination, the limit of entries to be returned"),
+  },
+  async ({ noteId, start, limit }) => {
+    try {
+      const queryParams: any = { id: noteId };
+      if (start !== undefined) queryParams.start = start;
+      if (limit !== undefined) queryParams.limit = limit;
+
+      const response = await notesApi.getNoteComments(queryParams);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(`Error fetching comments for note ${noteId}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error fetching comments for note ${noteId}: ${getErrorMessage(
+              error
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Get specific note comment
+server.tool(
+  "get-note-comment",
+  "Fetch details of a specific comment within a note. Returns comment content, author information, timestamps, and edit history.",
+  {
+    noteId: z.number().describe("Note ID"),
+    commentId: z.string().describe("Comment ID (UUID format)"),
+  },
+  async ({ noteId, commentId }) => {
+    try {
+      const response = await notesApi.getNoteComment({ id: noteId, commentId });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(
+        `Error fetching comment ${commentId} for note ${noteId}:`,
+        error
+      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error fetching comment ${commentId} for note ${noteId}: ${getErrorMessage(
+              error
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Create note
+server.tool(
+  "create-note",
+  "Add a new note to Pipedrive CRM. Attach notes to deals, contacts, organizations, projects, or leads for detailed record keeping and collaboration.",
+  {
+    content: z.string().describe("Note content (required)"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to associate the note with"),
+    deal_id: z
+      .number()
+      .optional()
+      .describe("Deal ID to associate the note with"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID to associate the note with"),
+    org_id: z
+      .number()
+      .optional()
+      .describe("Organization ID to associate the note with"),
+    project_id: z
+      .number()
+      .optional()
+      .describe("Project ID to associate the note with"),
+    user_id: z
+      .number()
+      .optional()
+      .describe("User ID to assign note ownership to"),
+    add_time: z
+      .string()
+      .optional()
+      .describe("Creation timestamp in RFC3339 format"),
+    pinned_to_lead_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated lead"),
+    pinned_to_deal_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated deal"),
+    pinned_to_organization_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated organization"),
+    pinned_to_person_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated person"),
+    pinned_to_project_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated project"),
+  },
+  async (params) => {
+    try {
+      const response = await notesApi.addNote(params);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error creating note:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error creating note: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Add note comment
+server.tool(
+  "create-note-comment",
+  "Add a comment to an existing note for collaborative discussion and follow-up. Create threaded conversations within note context.",
+  {
+    noteId: z.number().describe("Note ID"),
+    content: z.string().describe("Comment content (required)"),
+  },
+  async ({ noteId, content }) => {
+    try {
+      const response = await notesApi.addNoteComment({ id: noteId, content });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(`Error creating comment for note ${noteId}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error creating comment for note ${noteId}: ${getErrorMessage(
+              error
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Update note
+server.tool(
+  "update-note",
+  "Modify an existing note's content, associations, or pinning status. Update note attachments to different CRM records and manage visibility settings.",
+  {
+    noteId: z.number().describe("Note ID"),
+    content: z.string().optional().describe("Note content"),
+    lead_id: z
+      .string()
+      .optional()
+      .describe("Lead ID (UUID format) to associate the note with"),
+    deal_id: z
+      .number()
+      .optional()
+      .describe("Deal ID to associate the note with"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID to associate the note with"),
+    org_id: z
+      .number()
+      .optional()
+      .describe("Organization ID to associate the note with"),
+    project_id: z
+      .number()
+      .optional()
+      .describe("Project ID to associate the note with"),
+    user_id: z
+      .number()
+      .optional()
+      .describe("User ID to assign note ownership to"),
+    add_time: z
+      .string()
+      .optional()
+      .describe("Creation timestamp in RFC3339 format"),
+    pinned_to_lead_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated lead"),
+    pinned_to_deal_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated deal"),
+    pinned_to_organization_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated organization"),
+    pinned_to_person_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated person"),
+    pinned_to_project_flag: z
+      .boolean()
+      .optional()
+      .describe("Whether to pin the note to the associated project"),
+  },
+  async ({ noteId, ...params }) => {
+    try {
+      const updateParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined)
+      );
+
+      const response = await notesApi.updateNote({
+        id: noteId,
+        ...updateParams,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(`Error updating note ${noteId}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error updating note ${noteId}: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Update note comment
+server.tool(
+  "update-note-comment",
+  "Modify an existing comment within a note. Edit comment content while preserving discussion context and timestamp history.",
+  {
+    noteId: z.number().describe("Note ID"),
+    commentId: z.string().describe("Comment ID (UUID format)"),
+    content: z.string().describe("Updated comment content (required)"),
+  },
+  async ({ noteId, commentId, content }) => {
+    try {
+      const response = await notesApi.updateNoteComment({
+        id: noteId,
+        commentId,
+        content,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(
+        `Error updating comment ${commentId} for note ${noteId}:`,
+        error
+      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error updating comment ${commentId} for note ${noteId}: ${getErrorMessage(
+              error
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Delete note
+server.tool(
+  "delete-note",
+  "Remove a note from Pipedrive permanently. Delete notes that are no longer relevant while preserving associated CRM record history.",
+  {
+    noteId: z.number().describe("Note ID"),
+  },
+  async ({ noteId }) => {
+    try {
+      const response = await notesApi.deleteNote({ id: noteId });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(`Error deleting note ${noteId}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error deleting note ${noteId}: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Delete note comment
+server.tool(
+  "delete-note-comment",
+  "Remove a specific comment from a note permanently. Clean up note discussions while maintaining the main note content and other comments.",
+  {
+    noteId: z.number().describe("Note ID"),
+    commentId: z.string().describe("Comment ID (UUID format)"),
+  },
+  async ({ noteId, commentId }) => {
+    try {
+      const response = await notesApi.deleteNoteComment({
+        id: noteId,
+        commentId,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(
+        `Error deleting comment ${commentId} for note ${noteId}:`,
+        error
+      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error deleting comment ${commentId} for note ${noteId}: ${getErrorMessage(
+              error
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+); // === PRODUCTS API ===
 
 // Get all products
 server.tool(
@@ -2211,30 +2820,35 @@ server.tool(
 // === WEBHOOKS API ===
 
 // Get all webhooks
-server.tool("get-webhooks", "Retrieve all configured webhooks and API integrations from Pipedrive. Shows webhook URLs, events, triggers, and integration status.", {}, async () => {
-  try {
-    const response = await webhooksApi.getWebhooks();
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(cleanResponseData(response.data), null, 2),
-        },
-      ],
-    };
-  } catch (error) {
-    console.error("Error fetching webhooks:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error fetching webhooks: ${getErrorMessage(error)}`,
-        },
-      ],
-      isError: true,
-    };
+server.tool(
+  "get-webhooks",
+  "Retrieve all configured webhooks and API integrations from Pipedrive. Shows webhook URLs, events, triggers, and integration status.",
+  {},
+  async () => {
+    try {
+      const response = await webhooksApi.getWebhooks();
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(cleanResponseData(response.data), null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error fetching webhooks:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error fetching webhooks: ${getErrorMessage(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
   }
-});
+);
 
 // Create webhook
 server.tool(
@@ -2323,13 +2937,43 @@ server.tool(
   "get-leads",
   "Retrieve all sales leads and prospects from Pipedrive CRM. Leads are potential customers before they become deals. Filter by owner, person, organization, or custom filters.",
   {
-    limit: z.number().optional().describe("For pagination, the limit of entries to be returned. If not provided, 100 items will be returned."),
-    start: z.number().optional().describe("For pagination, the position that represents the first result for the page"),
-    owner_id: z.number().optional().describe("If supplied, only leads matching the given user will be returned. However, filter_id takes precedence over owner_id when supplied."),
-    person_id: z.number().optional().describe("If supplied, only leads matching the given person will be returned. However, filter_id takes precedence over person_id when supplied."),
-    organization_id: z.number().optional().describe("If supplied, only leads matching the given organization will be returned. However, filter_id takes precedence over organization_id when supplied."),
+    limit: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the limit of entries to be returned. If not provided, 100 items will be returned."
+      ),
+    start: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the position that represents the first result for the page"
+      ),
+    owner_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given user will be returned. However, filter_id takes precedence over owner_id when supplied."
+      ),
+    person_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given person will be returned. However, filter_id takes precedence over person_id when supplied."
+      ),
+    organization_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given organization will be returned. However, filter_id takes precedence over organization_id when supplied."
+      ),
     filter_id: z.number().optional().describe("The ID of the filter to use"),
-    sort: z.string().optional().describe("The field names and sorting mode separated by a comma (field_name_1 ASC, field_name_2 DESC). Supported fields: id, title, owner_id, creator_id, was_seen, expected_close_date, next_activity_id, add_time, update_time"),
+    sort: z
+      .string()
+      .optional()
+      .describe(
+        "The field names and sorting mode separated by a comma (field_name_1 ASC, field_name_2 DESC). Supported fields: id, title, owner_id, creator_id, was_seen, expected_close_date, next_activity_id, add_time, update_time"
+      ),
   },
   async (params) => {
     try {
@@ -2366,13 +3010,43 @@ server.tool(
   "get-archived-leads",
   "Retrieve all archived leads that have been moved out of active pipeline. Shows historical lead data and conversion tracking for reporting purposes.",
   {
-    limit: z.number().optional().describe("For pagination, the limit of entries to be returned. If not provided, 100 items will be returned."),
-    start: z.number().optional().describe("For pagination, the position that represents the first result for the page"),
-    owner_id: z.number().optional().describe("If supplied, only leads matching the given user will be returned. However, filter_id takes precedence over owner_id when supplied."),
-    person_id: z.number().optional().describe("If supplied, only leads matching the given person will be returned. However, filter_id takes precedence over person_id when supplied."),
-    organization_id: z.number().optional().describe("If supplied, only leads matching the given organization will be returned. However, filter_id takes precedence over organization_id when supplied."),
+    limit: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the limit of entries to be returned. If not provided, 100 items will be returned."
+      ),
+    start: z
+      .number()
+      .optional()
+      .describe(
+        "For pagination, the position that represents the first result for the page"
+      ),
+    owner_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given user will be returned. However, filter_id takes precedence over owner_id when supplied."
+      ),
+    person_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given person will be returned. However, filter_id takes precedence over person_id when supplied."
+      ),
+    organization_id: z
+      .number()
+      .optional()
+      .describe(
+        "If supplied, only leads matching the given organization will be returned. However, filter_id takes precedence over organization_id when supplied."
+      ),
     filter_id: z.number().optional().describe("The ID of the filter to use"),
-    sort: z.string().optional().describe("The field names and sorting mode separated by a comma (field_name_1 ASC, field_name_2 DESC). Supported fields: id, title, owner_id, creator_id, was_seen, expected_close_date, next_activity_id, add_time, update_time"),
+    sort: z
+      .string()
+      .optional()
+      .describe(
+        "The field names and sorting mode separated by a comma (field_name_1 ASC, field_name_2 DESC). Supported fields: id, title, owner_id, creator_id, was_seen, expected_close_date, next_activity_id, add_time, update_time"
+      ),
   },
   async (params) => {
     try {
@@ -2456,12 +3130,17 @@ server.tool(
         ],
       };
     } catch (error) {
-      console.error(`Error fetching permitted users for lead ${leadId}:`, error);
+      console.error(
+        `Error fetching permitted users for lead ${leadId}:`,
+        error
+      );
       return {
         content: [
           {
             type: "text",
-            text: `Error fetching permitted users for lead ${leadId}: ${getErrorMessage(error)}`,
+            text: `Error fetching permitted users for lead ${leadId}: ${getErrorMessage(
+              error
+            )}`,
           },
         ],
         isError: true,
@@ -2477,17 +3156,41 @@ server.tool(
   {
     title: z.string().describe("Lead title/name (required)"),
     owner_id: z.number().optional().describe("User ID of lead owner"),
-    label_ids: z.array(z.string()).optional().describe("Array of label IDs to assign"),
-    person_id: z.number().optional().describe("Person ID if lead is associated with existing contact"),
-    organization_id: z.number().optional().describe("Organization ID if lead belongs to existing company"),
-    source_name: z.string().optional().describe("Lead source name (e.g., 'Website', 'Cold Call')"),
-    is_archived: z.boolean().optional().describe("Whether lead should be archived"),
-    visible_to: z.enum(["1", "3", "5", "7"]).optional().describe("Visibility level"),
-    value: z.object({
-      amount: z.number().describe("Expected deal value"),
-      currency: z.string().describe("Currency code (e.g., 'USD')"),
-    }).optional().describe("Expected value of the lead"),
-    was_seen: z.boolean().optional().describe("Whether lead has been seen/reviewed"),
+    label_ids: z
+      .array(z.string())
+      .optional()
+      .describe("Array of label IDs to assign"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID if lead is associated with existing contact"),
+    organization_id: z
+      .number()
+      .optional()
+      .describe("Organization ID if lead belongs to existing company"),
+    source_name: z
+      .string()
+      .optional()
+      .describe("Lead source name (e.g., 'Website', 'Cold Call')"),
+    is_archived: z
+      .boolean()
+      .optional()
+      .describe("Whether lead should be archived"),
+    visible_to: z
+      .enum(["1", "3", "5", "7"])
+      .optional()
+      .describe("Visibility level"),
+    value: z
+      .object({
+        amount: z.number().describe("Expected deal value"),
+        currency: z.string().describe("Currency code (e.g., 'USD')"),
+      })
+      .optional()
+      .describe("Expected value of the lead"),
+    was_seen: z
+      .boolean()
+      .optional()
+      .describe("Whether lead has been seen/reviewed"),
   },
   async (params) => {
     try {
@@ -2523,17 +3226,38 @@ server.tool(
     leadId: z.string().describe("Lead ID (UUID format)"),
     title: z.string().optional().describe("Lead title/name"),
     owner_id: z.number().optional().describe("User ID of lead owner"),
-    label_ids: z.array(z.string()).optional().describe("Array of label IDs to assign"),
-    person_id: z.number().optional().describe("Person ID if lead is associated with contact"),
-    organization_id: z.number().optional().describe("Organization ID if lead belongs to company"),
+    label_ids: z
+      .array(z.string())
+      .optional()
+      .describe("Array of label IDs to assign"),
+    person_id: z
+      .number()
+      .optional()
+      .describe("Person ID if lead is associated with contact"),
+    organization_id: z
+      .number()
+      .optional()
+      .describe("Organization ID if lead belongs to company"),
     source_name: z.string().optional().describe("Lead source name"),
-    is_archived: z.boolean().optional().describe("Whether lead should be archived"),
-    visible_to: z.enum(["1", "3", "5", "7"]).optional().describe("Visibility level"),
-    value: z.object({
-      amount: z.number().describe("Expected deal value"),
-      currency: z.string().describe("Currency code"),
-    }).optional().describe("Expected value of the lead"),
-    was_seen: z.boolean().optional().describe("Whether lead has been seen/reviewed"),
+    is_archived: z
+      .boolean()
+      .optional()
+      .describe("Whether lead should be archived"),
+    visible_to: z
+      .enum(["1", "3", "5", "7"])
+      .optional()
+      .describe("Visibility level"),
+    value: z
+      .object({
+        amount: z.number().describe("Expected deal value"),
+        currency: z.string().describe("Currency code"),
+      })
+      .optional()
+      .describe("Expected value of the lead"),
+    was_seen: z
+      .boolean()
+      .optional()
+      .describe("Whether lead has been seen/reviewed"),
   },
   async ({ leadId, ...params }) => {
     try {

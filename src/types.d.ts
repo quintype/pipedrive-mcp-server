@@ -1,7 +1,11 @@
-declare module 'pipedrive' {
+declare module "pipedrive" {
   export namespace v1 {
     export interface ConfigurationParameters {
-      apiKey?: string | Promise<string> | ((name: string) => string) | ((name: string) => Promise<string>);
+      apiKey?:
+        | string
+        | Promise<string>
+        | ((name: string) => string)
+        | ((name: string) => Promise<string>);
     }
 
     export class Configuration {
@@ -26,7 +30,10 @@ declare module 'pipedrive' {
       constructor(configuration: Configuration);
       getOrganizations(params?: any): Promise<any>;
       getOrganization(params: { id: number; [key: string]: any }): Promise<any>;
-      searchOrganizations(params: { term: string; [key: string]: any }): Promise<any>;
+      searchOrganizations(params: {
+        term: string;
+        [key: string]: any;
+      }): Promise<any>;
     }
 
     export class PipelinesApi {
@@ -38,16 +45,21 @@ declare module 'pipedrive' {
 
     export class ItemSearchApi {
       constructor(configuration: Configuration);
-      searchItem(params: { term: string, itemType?: string }): Promise<any>;
+      searchItem(params: { term: string; itemType?: string }): Promise<any>;
     }
-
 
     export class ActivitiesApi {
       constructor(configuration: Configuration);
       getActivities(params?: any): Promise<any>;
-      addActivity(params: any): Promise<any>;
-      getActivity(params: { id: number; [key: string]: any }): Promise<any>;
-      updateActivity(params: { id: number; [key: string]: any }): Promise<any>;
+      addActivity(params?: { AddActivityRequest?: any }): Promise<any>;
+      getActivity(params: {
+        id: number;
+        include_fields?: string;
+      }): Promise<any>;
+      updateActivity(params: {
+        id: number;
+        AddActivityRequest?: any;
+      }): Promise<any>;
       deleteActivity(params: { id: number }): Promise<any>;
     }
 
@@ -142,7 +154,10 @@ declare module 'pipedrive' {
       getLead(requestParameters: { id: string }): Promise<any>;
       getLeadUsers(requestParameters: { id: string }): Promise<any>;
       addLead(requestParameters?: { AddLeadRequest?: any }): Promise<any>;
-      updateLead(requestParameters: { id: string; UpdateLeadRequest?: any }): Promise<any>;
+      updateLead(requestParameters: {
+        id: string;
+        UpdateLeadRequest?: any;
+      }): Promise<any>;
       deleteLead(requestParameters: { id: string }): Promise<any>;
       searchLeads(requestParameters: {
         term: string;
@@ -155,7 +170,6 @@ declare module 'pipedrive' {
         limit?: number;
       }): Promise<any>;
     }
-
 
     export class NoteFieldsApi {
       constructor(configuration: Configuration);
@@ -170,6 +184,22 @@ declare module 'pipedrive' {
       getNote(params: { id: number }): Promise<any>;
       updateNote(params: { id: number; [key: string]: any }): Promise<any>;
       deleteNote(params: { id: number }): Promise<any>;
+      getNoteComments(params: {
+        id: number;
+        start?: number;
+        limit?: number;
+      }): Promise<any>;
+      getNoteComment(params: { id: number; commentId: string }): Promise<any>;
+      addNoteComment(params: { id: number; content: string }): Promise<any>;
+      updateNoteComment(params: {
+        id: number;
+        commentId: string;
+        content: string;
+      }): Promise<any>;
+      deleteNoteComment(params: {
+        id: number;
+        commentId: string;
+      }): Promise<any>;
     }
 
     export class OrganizationFieldsApi {
@@ -227,7 +257,11 @@ declare module 'pipedrive' {
 
   export namespace v2 {
     export interface ConfigurationParameters {
-      apiKey?: string | Promise<string> | ((name: string) => string) | ((name: string) => Promise<string>);
+      apiKey?:
+        | string
+        | Promise<string>
+        | ((name: string) => string)
+        | ((name: string) => Promise<string>);
     }
 
     export class Configuration {
@@ -237,9 +271,15 @@ declare module 'pipedrive' {
     export class ActivitiesApi {
       constructor(configuration: Configuration);
       getActivities(params?: any): Promise<any>;
-      addActivity(params: any): Promise<any>;
-      getActivity(params: { id: number }): Promise<any>;
-      updateActivity(params: { id: number; [key: string]: any }): Promise<any>;
+      addActivity(params?: { AddActivityRequest?: any }): Promise<any>;
+      getActivity(params: {
+        id: number;
+        include_fields?: string;
+      }): Promise<any>;
+      updateActivity(params: {
+        id: number;
+        AddActivityRequest?: any;
+      }): Promise<any>;
       deleteActivity(params: { id: number }): Promise<any>;
     }
 
@@ -257,19 +297,21 @@ declare module 'pipedrive' {
 
     export class ItemSearchApi {
       constructor(configuration: Configuration);
-      searchItem(params: { term: string, itemType?: string }): Promise<any>;
+      searchItem(params: { term: string; itemType?: string }): Promise<any>;
     }
     export class LeadsApi {
       constructor(configuration: Configuration);
       searchLeads(params: { term: string }): Promise<any>;
     }
 
-
     export class OrganizationsApi {
       constructor(configuration: Configuration);
       getOrganizations(params?: any): Promise<any>;
       getOrganization(params: { id: number }): Promise<any>;
-      searchOrganizations(params: { term: string; [key: string]: any }): Promise<any>;
+      searchOrganizations(params: {
+        term: string;
+        [key: string]: any;
+      }): Promise<any>;
     }
 
     export class PersonsApi {
@@ -292,7 +334,10 @@ declare module 'pipedrive' {
       getProduct(params: { id: number }): Promise<any>;
       updateProduct(params: { id: number; [key: string]: any }): Promise<any>;
       deleteProduct(params: { id: number }): Promise<any>;
-      searchProducts(params: { term: string; [key: string]: any }): Promise<any>;
+      searchProducts(params: {
+        term: string;
+        [key: string]: any;
+      }): Promise<any>;
     }
 
     export class StagesApi {
@@ -306,4 +351,4 @@ declare module 'pipedrive' {
       getUserFollowers(params: { id: number }): Promise<any>;
     }
   }
-} 
+}
