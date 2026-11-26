@@ -14,7 +14,7 @@
     "dotenv": "^16.4.7",
     "pipedrive": "^29.2.1",
     "ts-node": "^10.9.2",
-    "zod": "^3.22.4"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
